@@ -1,0 +1,4 @@
+[debug] "not up to date. inChanged = true, force = false
+[debug] Updating ProjectRef(uri("file:/Users/msh/Downloads/lab4-example/"), "lab4-example")...
+[debug] Done updating ProjectRef(uri("file:/Users/msh/Downloads/lab4-example/"), "lab4-example")
+[warn] There may be incompatibilities among your library dependencies; run 'evicted' to see detailed eviction warnings.
