@@ -1,4 +1,5 @@
-[debug] "not up to date. inChanged = true, force = false
-[debug] Updating ProjectRef(uri("file:/Users/msh/Downloads/lab4-example/"), "lab4-example")...
-[debug] Done updating ProjectRef(uri("file:/Users/msh/Downloads/lab4-example/"), "lab4-example")
+[warn] scala-xml_2.13-1.2.0-sources.jar no longer exists at /Users/msh/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-xml_2.13/1.2.0/scala-xml_2.13-1.2.0-sources.jar
+[debug] "not up to date. inChanged = false, force = false
+[debug] Updating ProjectRef(uri("file:/Users/msh/Desktop/Scala/scala.project/"), "scala-project")...
+[debug] Done updating ProjectRef(uri("file:/Users/msh/Desktop/Scala/scala.project/"), "scala-project")
 [warn] There may be incompatibilities among your library dependencies; run 'evicted' to see detailed eviction warnings.

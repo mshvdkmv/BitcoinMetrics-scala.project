@@ -12,6 +12,7 @@ final case class InstantMetrics(timestamp: LocalDateTime,
                                 vwapAsks: Double,
                                 vwapBids: Double,
                                 vwapMidpoint: Double) extends Metrics {
+
   def toVector: Vector[String] = Vector(
     timestamp.toString,
     symbol,
@@ -19,6 +20,22 @@ final case class InstantMetrics(timestamp: LocalDateTime,
     vwapAsks.toString,
     vwapBids.toString,
     vwapMidpoint.toString)
+
+  override def toString: String = {
+
+    val as = Vector(
+      timestamp.toString,
+      symbol,
+      meetingPoint.toString,
+      vwapAsks.toString,
+      vwapBids.toString,
+      vwapMidpoint.toString)
+
+    val s = as.toString()
+
+    s.slice(7,s.length-1)
+  }
+
 }
 
 final case class SMA(startTimestamp: LocalDateTime,

@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 import akka.NotUsed
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
@@ -12,9 +13,17 @@ import akka.stream.scaladsl._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
+import java.io._
+
+import akka.http.scaladsl.server.Route
+
+import scala.collection.mutable.Map
+import StreamStages._
 
 
 object Kek extends App {
+
+
 
   val request = Map(
     "Binance" -> "https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=20",
@@ -25,7 +34,7 @@ object Kek extends App {
   def scrap_data(request_dict:Map[String,String]):(Vector[(Double, Double)], Vector[(Double, Double)])= {
     var all_asks: Vector[(Double, Double)] = Vector()
     var all_bids: Vector[(Double, Double)] = Vector()
-    for ((name, link) <- request_dict) {
+    for ((_, link) <- request_dict) {
       val result = requests.get(link)
       val json = ujson.read(result.text)
       val asks = json("asks").arr
@@ -50,70 +59,65 @@ object Kek extends App {
   val bids = b.sortBy(-_._1)
   val lt: LocalDateTime = LocalDateTime.now()
   val symbol = "XBTUSD"
-
   val testEntry : Entry = Entry(lt,symbol,b,a)
+  val my_source: Source[Entry, NotUsed] = Source(testEntry :: Nil)
 
 
-  import StreamStages._
+  var blockchainMetric = BlockchainMetrics.metricsInitialization(5)
+  val n = BlockchainMetrics.getLastNHoursHeights(2)
+  blockchainMetric = BlockchainMetrics.updateMetrics(blockchainMetric,n)
+  val blockchainResult = blockchainMetric.toVector
+  val n_source: Source[Vector[String], NotUsed] = Source(blockchainResult :: Nil)
+
 
   implicit val actors: ActorSystem = ActorSystem()
   implicit val executionContext: ExecutionContext = actors.dispatcher
 
   var c: Long = 1000000
 
-  val source: Source[Entry, NotUsed] = Source(testEntry :: Nil)
 
-  println(source)
+  val exchangesMetrics = Metrics.instantFromEntry(testEntry,c)
+  val exchangesString = exchangesMetrics.toString
 
-  val route = concat(
-    (path("instant-metrics") & parameter("symbol".as[String].?)) { symbol: Option[String] =>
-      get {
-        val stream = source
-          .via(filter(symbol))
-          .via(instantMetrics(c))
-          .map(_.toVector)
-          .prepend(instantHeader)
-          .via(formatter)
-        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
-      }
-    },
-    (path("sma") & parameter("symbol".as[String]) & parameter("n".as[Int])) { (symbol: String, n: Int) =>
-        get {
-          val stream = source
-            .via(filter(Some(symbol)))
-            .via(instantMetrics(c))
-            .sliding(n)
-            .via(sma)
-            .map(_.toVector)
-            .prepend(continuousHeader)
-            .via(formatter)
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
-        }
-      },
-    (path("ema") & parameter("symbol".as[String]) & parameter("n".as[Int])) { (symbol: String, n: Int) =>
-        get {
-          val stream = source
-            .via(filter(Some(symbol)))
-            .via(instantMetrics(c))
-            .sliding(n)
-            .via(sma)
-            .via(smaToEma)
-            .map(_.toVector)
-            .prepend(continuousHeader)
-            .via(formatter)
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
-        }
-      },
-    (path("c") & parameter("c".as[Long])) { c: Long =>
-        post {
-          this.c = c
-          complete("c changed")
-        }
+  val exchangesPW = new PrintWriter(new File("exchanges_metrics.txt" ))
+  exchangesPW.write(exchangesString)
+  exchangesPW.close()
+
+  val blockchainPW = new PrintWriter(new File("blockchain_metrics.txt" ))
+  blockchainPW.write(blockchainMetric.toString())
+  blockchainPW.close()
+
+
+
+  val route: Route = (path("instant-metrics") & parameter("symbol".as[String].?)) { symbol =>
+    get {
+      val stream = my_source
+        .via(filter(symbol))
+        .via(instantMetrics(c))
+        .map(_.toVector)
+        .prepend(instantHeader)
+        .via(formatter)
+      complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
     }
-  )
+  }
+
+  val my_route: Route = (path("instant-metrics") & parameter("symbol".as[String].?)) { _ =>
+    get {
+      val stream = n_source
+//        .via(filter(symbol))
+//        .via(instantMetrics(c))
+        .map(_.toVector)
+        .prepend(blockchainHeader)
+        .via(formatter)
+      complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
+    }
+  }
+
 
   for {
     binding <- Http().bindAndHandle(route, "localhost", 8080)
+    binding <- Http().bindAndHandle(my_route, "localhost", 8088)
+
     _ = sys.addShutdownHook {
       for {
         _ <- binding.terminate(Duration(5, TimeUnit.SECONDS))
@@ -121,4 +125,7 @@ object Kek extends App {
       } yield ()
     }
   } yield ()
+
+
+
 }
