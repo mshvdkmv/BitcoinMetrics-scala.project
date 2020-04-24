@@ -24,7 +24,7 @@ import StreamStages._
 object Kek extends App {
 
 
-  var c: Long = 1000000
+  var c: Long = 1000000L
 
   val exchangesMap = Map(
     "Binance" -> "https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=20",
@@ -72,7 +72,7 @@ object Kek extends App {
     }
   }
 
-  val my_route: Route = (path("instant-metrics") & parameter("symbol".as[String].?)) { _ =>
+  val my_route: Route = (path("blockchain-metrics") & parameter("symbol".as[String].?)) { _ =>
     get {
       val stream = n_source
         .map(_.toVector)

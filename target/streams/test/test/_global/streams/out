@@ -1,0 +1,14 @@
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(kek.MetricsSpec, org.scalatest.tools.Framework$$anon$1@627f5b2f, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(kek.EntrySpec, org.scalatest.tools.Framework$$anon$1@627f5b2f, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(kek.OptionUtilsSpec, org.scalatest.tools.Framework$$anon$1@627f5b2f, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(kek.BlockchainMetricsSpec, org.scalatest.tools.Framework$$anon$1@627f5b2f, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 2 seconds, 294 milliseconds.[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTotal number of tests run: 11[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mSuites: completed 4, aborted 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTests: succeeded 11, failed 0, canceled 0, ignored 0, pending 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mAll tests passed.[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0mPassed tests:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	kek.EntrySpec[0m
+[0m[[0m[0mdebug[0m] [0m[0m	kek.OptionUtilsSpec[0m
+[0m[[0m[0mdebug[0m] [0m[0m	kek.BlockchainMetricsSpec[0m
+[0m[[0m[0mdebug[0m] [0m[0m	kek.MetricsSpec[0m

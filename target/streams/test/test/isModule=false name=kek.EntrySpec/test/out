@@ -1,0 +1,5 @@
+[0m[[0m[0minfo[0m] [0m[0m[32mEntrySpec:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mfromLine[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should parse a basic entry correctly[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should return None when the timestamp is incorrect[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should return None when there are too few bids and asks[0m[0m

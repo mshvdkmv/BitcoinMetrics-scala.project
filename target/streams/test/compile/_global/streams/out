@@ -1,0 +1,7 @@
+[0m[[0m[31merror[0m] [0m[0m/Users/msh/Desktop/Scala/scala.project/src/test/scala/kek/BlockchainMetricsSpec.scala:69:26: integer number too large[0m
+[0m[[0m[31merror[0m] [0m[0m  val cryptoval : Long = 15281331057[0m
+[0m[[0m[31merror[0m] [0m[0m                         ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/msh/Desktop/Scala/scala.project/src/test/scala/kek/BlockchainMetricsSpec.scala:70:3: ';' expected but 'private' found.[0m
+[0m[[0m[31merror[0m] [0m[0m  private val block627437info = scala.collection.mutable.Map("tsxCount" -> 152, "cryptoVal" -> cryptoval, "unsignedTsxCount" -> 7324, "fee" -> 5792409)[0m
+[0m[[0m[31merror[0m] [0m[0m  ^[0m
+[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m

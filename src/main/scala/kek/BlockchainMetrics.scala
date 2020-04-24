@@ -3,18 +3,17 @@ package kek
 import java.time.LocalDateTime
 
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayDeque, ListBuffer, Map}
 
 final case class BlockchainMetrics(timestamp: LocalDateTime,
-                                  feeQueue: ArrayDeque[Long],
-                                  cryptoValQueue: ArrayDeque[Long],
-                                  tsxQueue: ArrayDeque[Long],
-                                  unsignedTsxQueue: ArrayDeque[Long],
-                                  feeMetrics : Map[String,Double],
-                                  cryptoValMetrics : Map[String,Double],
-                                  tsxMetrics : Map[String,Double],
-                                  unsignedTsxMetrics : Map[String,Double],
-                                  lastBlockHeight : Int)
+                                   feeQueue: mutable.ArrayDeque[Long],
+                                   cryptoValQueue: mutable.ArrayDeque[Long],
+                                   tsxQueue: mutable.ArrayDeque[Long],
+                                   unsignedTsxQueue: mutable.ArrayDeque[Long],
+                                   feeMetrics : mutable.Map[String,Double],
+                                   cryptoValMetrics : mutable.Map[String,Double],
+                                   tsxMetrics : mutable.Map[String,Double],
+                                   unsignedTsxMetrics : mutable.Map[String,Double],
+                                   lastBlockHeight : Int)
   extends Metrics {
 
 
@@ -102,7 +101,7 @@ object BlockchainMetrics {
     currMet
   }
 
-  def updateMetric(newValue: Long, queue: ArrayDeque[Long], metrics: Map[String, Double]): (ArrayDeque[Long], Map[String, Double]) = {
+  def updateMetric(newValue: Long, queue: mutable.ArrayDeque[Long], metrics: mutable.Map[String, Double]): (mutable.ArrayDeque[Long], mutable.Map[String, Double]) = {
 
     val popped = queue.removeHead()
     queue += newValue
@@ -115,7 +114,7 @@ object BlockchainMetrics {
     (queue, metrics)
   }
 
-  def getUnsignedTSX(): Long = {
+  def getUnsignedTSX: Long = {
 
     val result = requests.get("https://blockchain.info/q/unconfirmedcount")
     val unsignedTSX = ujson.read(result.text).toString().toLong
@@ -123,7 +122,7 @@ object BlockchainMetrics {
 
   }
 
-  def getBlockInfo(blockHeight: Int): Map[String, Long] = {
+  def getBlockInfo(blockHeight: Int): mutable.Map[String, Long] = {
 
     val url = "https://api.blockchair.com/bitcoin/blocks?q=id(".concat(blockHeight.toString).concat(")")
     val result = requests.get(url)
@@ -132,7 +131,7 @@ object BlockchainMetrics {
     val fee = data("fee_total").toString().toLong
     val tsxCount = data("transaction_count").toString().toLong
     val cryptoVal = data("input_total").toString().toLong
-    val unsignedTsxCount = getUnsignedTSX()
+    val unsignedTsxCount = getUnsignedTSX
 
     val answer = scala.collection.mutable.Map("fee" -> fee, "tsxCount" -> tsxCount, "cryptoVal" -> cryptoVal, "unsignedTsxCount" -> unsignedTsxCount)
 

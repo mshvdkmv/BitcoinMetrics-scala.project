@@ -1,0 +1,5 @@
+[0m[[0m[0minfo[0m] [0m[0m[32mOptionUtilsSpec:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32msequence[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should return Some when there are no Nones in the input[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should return Some if the input is empty[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should return None if at least one element is empty[0m[0m
