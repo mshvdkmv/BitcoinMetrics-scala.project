@@ -8,7 +8,7 @@ object StreamStages {
   val formatter: Flow[Vector[String], ByteString, Any] = CsvFormatting.format()
 
   val instantHeader: Source[Vector[String], Any] = Source.single(Vector("timestamp", "symbol", "meeting_point", "vwap_asks", "vwap_bids", "vwap_midpoint"))
-  val blockchainHeader : Source[Vector[String], Any] = Source.single(Vector("timestamp", "feeMetrics", "cryptoValMetrics", "tsxMetrics", "unsignedTsxMetrics"))
+  val blockchainHeader : Source[Vector[String], Any] = Source.single(Vector("timestamp", "feeMetrics", "cryptoValMetrics", "tsxMetrics", "unsignedTsxMetrics", "lastBlockHeight"))
   val continuousHeader: Source[Vector[String], Any] = Source.single(Vector("start_timestamp", "end_timestamp", "symbol", "moving_average"))
 
   def filter(symbol: Option[String]): Flow[Entry, Entry, Any] = symbol match {

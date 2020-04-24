@@ -24,7 +24,8 @@ final case class BlockchainMetrics(timestamp: LocalDateTime,
     feeMetrics.toString.slice(7,feeMetrics.toString.length).replace("->","="),
     cryptoValMetrics.toString.slice(7,cryptoValMetrics.toString.length).replace("->","="),
     tsxMetrics.toString.slice(7,tsxMetrics.toString.length).replace("->","="),
-    unsignedTsxMetrics.toString.slice(7,unsignedTsxMetrics.toString.length).replace("->","=")
+    unsignedTsxMetrics.toString.slice(7,unsignedTsxMetrics.toString.length).replace("->","="),
+    lastBlockHeight.toString
   )
 
   override def toString: String = {
@@ -34,7 +35,8 @@ final case class BlockchainMetrics(timestamp: LocalDateTime,
       feeMetrics.toString.slice(7,feeMetrics.toString.length).replace("->","="),
       cryptoValMetrics.toString.slice(7,cryptoValMetrics.toString.length).replace("->","="),
       tsxMetrics.toString.slice(7,tsxMetrics.toString.length).replace("->","="),
-      unsignedTsxMetrics.toString.slice(7,unsignedTsxMetrics.toString.length).replace("->","=")
+      unsignedTsxMetrics.toString.slice(7,unsignedTsxMetrics.toString.length).replace("->","="),
+      lastBlockHeight.toString
     )
 
     val s = as.toString()
@@ -48,29 +50,29 @@ object BlockchainMetrics {
 
   def metricsInitialization(size: Int): BlockchainMetrics = {
 
-    var defaultQueue = mutable.ArrayDeque[Long]()
-    var defaultQueueTwo = mutable.ArrayDeque[Long]()
-    var defaultQueueTree = mutable.ArrayDeque[Long]()
-    var defaultQueueFour = mutable.ArrayDeque[Long]()
-    val defaultMap = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
-    val defaultMapTwo = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
-    val defaultMapTree = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
-    val defaultMapFour = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
+
+    var feeQueue = mutable.ArrayDeque[Long]()
+    var cryptoValQueue = mutable.ArrayDeque[Long]()
+    var tsxQueue = mutable.ArrayDeque[Long]()
+    var unsignedTsxQueue = mutable.ArrayDeque[Long]()
+    val feeMetrics = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
+    val cryptoValMetrics = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
+    val tsxMetrics = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
+    val unsignedTsxMetrics = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
     val lastBlockHeight = 0
 
     for (_ <- 1 to size) {
-      defaultQueue += 0
-      defaultQueueTwo += 0
-      defaultQueueTree += 0
-      defaultQueueFour += 0
-
+      feeQueue += 0
+      cryptoValQueue += 0
+      tsxQueue += 0
+      unsignedTsxQueue += 0
 
     }
 
     val timestamp = LocalDateTime.now()
 
-    BlockchainMetrics(timestamp, defaultQueue, defaultQueueTwo, defaultQueueTree, defaultQueueFour,
-      defaultMap, defaultMapTwo, defaultMapTree, defaultMapFour, lastBlockHeight)
+    BlockchainMetrics(timestamp, feeQueue, cryptoValQueue, tsxQueue, unsignedTsxQueue,
+      feeMetrics, cryptoValMetrics, tsxMetrics, unsignedTsxMetrics, lastBlockHeight)
 
 
   }

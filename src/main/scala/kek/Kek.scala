@@ -24,60 +24,28 @@ import StreamStages._
 object Kek extends App {
 
 
+  var c: Long = 1000000
 
-  val request = Map(
+  val exchangesMap = Map(
     "Binance" -> "https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=20",
     "OKEx" -> "http://www.okex.com/api/spot/v3/instruments/BTC-USDT/book?size=20",
     "CoinbasePro" -> "https://api.pro.coinbase.com/products/BTC-USD/book?level=2",
   )
-
-  def scrap_data(request_dict:Map[String,String]):(Vector[(Double, Double)], Vector[(Double, Double)])= {
-    var all_asks: Vector[(Double, Double)] = Vector()
-    var all_bids: Vector[(Double, Double)] = Vector()
-    for ((_, link) <- request_dict) {
-      val result = requests.get(link)
-      val json = ujson.read(result.text)
-      val asks = json("asks").arr
-      val bids = json("bids").arr
-      for (ask <- asks) {
-        val cost: Double = ask(0).str.toDouble
-        val amount: Double = ask(1).str.toDouble
-        all_asks = (cost, amount) +: all_asks
-      }
-      for (bid <- bids) {
-        val cost : Double = bid(0).str.toDouble
-        val amount : Double = bid(1).str.toDouble
-        all_bids = (cost, amount) +: all_bids
-      }
-
-    }
-    (all_asks, all_bids)
-  }
-
-  val (a ,b) = scrap_data(request)
-  val asks = a.sortBy(-_._1)
-  val bids = b.sortBy(-_._1)
+  val (a ,b) = Metrics.scrapExchangesBidsAsks(exchangesMap)
   val lt: LocalDateTime = LocalDateTime.now()
   val symbol = "XBTUSD"
   val testEntry : Entry = Entry(lt,symbol,b,a)
-  val my_source: Source[Entry, NotUsed] = Source(testEntry :: Nil)
+  val exchangesMetrics = Metrics.instantFromEntry(testEntry,c)
+  val exchangesString = exchangesMetrics.toString
 
 
   var blockchainMetric = BlockchainMetrics.metricsInitialization(5)
   val n = BlockchainMetrics.getLastNHoursHeights(2)
   blockchainMetric = BlockchainMetrics.updateMetrics(blockchainMetric,n)
   val blockchainResult = blockchainMetric.toVector
+
+  val my_source: Source[Entry, NotUsed] = Source(testEntry :: Nil)
   val n_source: Source[Vector[String], NotUsed] = Source(blockchainResult :: Nil)
-
-
-  implicit val actors: ActorSystem = ActorSystem()
-  implicit val executionContext: ExecutionContext = actors.dispatcher
-
-  var c: Long = 1000000
-
-
-  val exchangesMetrics = Metrics.instantFromEntry(testEntry,c)
-  val exchangesString = exchangesMetrics.toString
 
   val exchangesPW = new PrintWriter(new File("exchanges_metrics.txt" ))
   exchangesPW.write(exchangesString)
@@ -87,6 +55,9 @@ object Kek extends App {
   blockchainPW.write(blockchainMetric.toString())
   blockchainPW.close()
 
+
+  implicit val actors: ActorSystem = ActorSystem()
+  implicit val executionContext: ExecutionContext = actors.dispatcher
 
 
   val route: Route = (path("instant-metrics") & parameter("symbol".as[String].?)) { symbol =>
@@ -104,8 +75,6 @@ object Kek extends App {
   val my_route: Route = (path("instant-metrics") & parameter("symbol".as[String].?)) { _ =>
     get {
       val stream = n_source
-//        .via(filter(symbol))
-//        .via(instantMetrics(c))
         .map(_.toVector)
         .prepend(blockchainHeader)
         .via(formatter)

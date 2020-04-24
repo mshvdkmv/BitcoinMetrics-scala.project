@@ -2,6 +2,8 @@ package kek
 
 import java.time.LocalDateTime
 
+import scala.collection.mutable.Map
+
 trait Metrics {
   def toVector: Vector[String]
 }
@@ -81,5 +83,31 @@ object Metrics {
       }
     })
     vwapNumerDenom._1 / vwapNumerDenom._2
+  }
+
+  def scrapExchangesBidsAsks(request_dict:Map[String,String]):(Vector[(Double, Double)], Vector[(Double, Double)])= {
+
+    var allAsks: Vector[(Double, Double)] = Vector()
+    var allBids: Vector[(Double, Double)] = Vector()
+    for ((_, link) <- request_dict) {
+      val result = requests.get(link)
+      val json = ujson.read(result.text)
+      val asks = json("asks").arr
+      val bids = json("bids").arr
+      for (ask <- asks) {
+        val cost: Double = ask(0).str.toDouble
+        val amount: Double = ask(1).str.toDouble
+        allAsks = (cost, amount) +: allAsks
+      }
+      for (bid <- bids) {
+        val cost : Double = bid(0).str.toDouble
+        val amount : Double = bid(1).str.toDouble
+        allBids = (cost, amount) +: allBids
+      }
+
+    }
+    val asks_final = allAsks.sortBy(-_._1)
+    val bids_final = allBids.sortBy(-_._1)
+    (asks_final, bids_final)
   }
 }
