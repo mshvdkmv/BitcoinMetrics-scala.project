@@ -4,11 +4,13 @@ import java.time.LocalDateTime
 
 import scala.collection.mutable
 
+
+
 final case class BlockchainMetrics(timestamp: LocalDateTime,
-                                   feeQueue: mutable.ArrayDeque[Long],
-                                   cryptoValQueue: mutable.ArrayDeque[Long],
-                                   tsxQueue: mutable.ArrayDeque[Long],
-                                   unsignedTsxQueue: mutable.ArrayDeque[Long],
+                                   feeQueue: mutable.ArrayBuffer[Long],
+                                   cryptoValQueue: mutable.ArrayBuffer[Long],
+                                   tsxQueue: mutable.ArrayBuffer[Long],
+                                   unsignedTsxQueue: mutable.ArrayBuffer[Long],
                                    feeMetrics : mutable.Map[String,Double],
                                    cryptoValMetrics : mutable.Map[String,Double],
                                    tsxMetrics : mutable.Map[String,Double],
@@ -50,10 +52,10 @@ object BlockchainMetrics {
   def metricsInitialization(size: Int): BlockchainMetrics = {
 
 
-    var feeQueue = mutable.ArrayDeque[Long]()
-    var cryptoValQueue = mutable.ArrayDeque[Long]()
-    var tsxQueue = mutable.ArrayDeque[Long]()
-    var unsignedTsxQueue = mutable.ArrayDeque[Long]()
+    val feeQueue = mutable.ArrayBuffer[Long]()
+    val cryptoValQueue = mutable.ArrayBuffer[Long]()
+    val tsxQueue = mutable.ArrayBuffer[Long]()
+    val unsignedTsxQueue = mutable.ArrayBuffer[Long]()
     val feeMetrics = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
     val cryptoValMetrics = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
     val tsxMetrics = scala.collection.mutable.Map("avg" -> 0.0, "min" -> Double.MaxValue, "max" -> Double.MinValue, "sum" -> 0.0)
@@ -101,9 +103,10 @@ object BlockchainMetrics {
     currMet
   }
 
-  def updateMetric(newValue: Long, queue: mutable.ArrayDeque[Long], metrics: mutable.Map[String, Double]): (mutable.ArrayDeque[Long], mutable.Map[String, Double]) = {
+  def updateMetric(newValue: Long, queue: mutable.ArrayBuffer[Long], metrics: mutable.Map[String, Double]): (mutable.ArrayBuffer[Long], mutable.Map[String, Double]) = {
 
-    val popped = queue.removeHead()
+    val popped = queue(0)
+    queue.trimStart(1)
     queue += newValue
     val newSum = metrics("sum") - popped + newValue
     metrics.update("sum", newSum)

@@ -106,8 +106,8 @@ object Metrics {
       }
 
     }
-    val asks_final = allAsks.sortBy(-_._1)
-    val bids_final = allBids.sortBy(-_._1)
-    (asks_final, bids_final)
+    val asksFinal = allAsks.sortBy(-_._1)
+    val bidsFinal = allBids.sortBy(-_._1)
+    (asksFinal, bidsFinal)
   }
 }

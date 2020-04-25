@@ -2,9 +2,9 @@ package kek
 
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
+import java.io.File
 
 import akka.NotUsed
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
@@ -17,20 +17,23 @@ import java.io._
 
 import akka.http.scaladsl.server.Route
 
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map}
 import StreamStages._
-
+import com.typesafe.config.ConfigFactory
 
 object Kek extends App {
 
 
+  val conf = ConfigFactory.load()
   var c: Long = 1000000L
 
   val exchangesMap = Map(
-    "Binance" -> "https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=20",
-    "OKEx" -> "http://www.okex.com/api/spot/v3/instruments/BTC-USDT/book?size=20",
-    "CoinbasePro" -> "https://api.pro.coinbase.com/products/BTC-USD/book?level=2",
+    "Binance" -> conf.getString("exchanges.Binance"),
+    "OKEx" -> conf.getString("exchanges.OKEx"),
+    "CoinbasePro" -> conf.getString("exchanges.CoinbasePro")
   )
+
+
   val (a ,b) = Metrics.scrapExchangesBidsAsks(exchangesMap)
   val lt: LocalDateTime = LocalDateTime.now()
   val symbol = "XBTUSD"
@@ -44,14 +47,17 @@ object Kek extends App {
   blockchainMetric = BlockchainMetrics.updateMetrics(blockchainMetric,n)
   val blockchainResult = blockchainMetric.toVector
 
-  val my_source: Source[Entry, NotUsed] = Source(testEntry :: Nil)
-  val n_source: Source[Vector[String], NotUsed] = Source(blockchainResult :: Nil)
+  val exchangeSource: Source[Entry, NotUsed] = Source(testEntry :: Nil)
+  val blockchainSource: Source[Vector[String], NotUsed] = Source(blockchainResult :: Nil)
 
-  val exchangesPW = new PrintWriter(new File("exchanges_metrics.txt" ))
+  val writePath = conf.getString("directories.writePath")
+  
+
+  val exchangesPW = new PrintWriter(new File(writePath.concat("exchanges_metrics.txt")))
   exchangesPW.write(exchangesString)
   exchangesPW.close()
 
-  val blockchainPW = new PrintWriter(new File("blockchain_metrics.txt" ))
+  val blockchainPW = new PrintWriter(new File(writePath.concat("blockchain_metrics.txt") ))
   blockchainPW.write(blockchainMetric.toString())
   blockchainPW.close()
 
@@ -62,7 +68,7 @@ object Kek extends App {
 
   val route: Route = (path("instant-metrics") & parameter("symbol".as[String].?)) { symbol =>
     get {
-      val stream = my_source
+      val stream = exchangeSource
         .via(filter(symbol))
         .via(instantMetrics(c))
         .map(_.toVector)
@@ -72,9 +78,9 @@ object Kek extends App {
     }
   }
 
-  val my_route: Route = (path("blockchain-metrics") & parameter("symbol".as[String].?)) { _ =>
+  val myRoute: Route = path("blockchain-metrics") {
     get {
-      val stream = n_source
+      val stream = blockchainSource
         .map(_.toVector)
         .prepend(blockchainHeader)
         .via(formatter)
@@ -85,7 +91,7 @@ object Kek extends App {
 
   for {
     binding <- Http().bindAndHandle(route, "localhost", 8080)
-    binding <- Http().bindAndHandle(my_route, "localhost", 8088)
+    binding <- Http().bindAndHandle(myRoute, "localhost", 8088)
 
     _ = sys.addShutdownHook {
       for {
