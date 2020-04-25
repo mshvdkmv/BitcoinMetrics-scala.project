@@ -42,7 +42,9 @@ object Kek extends App {
   val exchangesString = exchangesMetrics.toString
 
 
-  var blockchainMetric = BlockchainMetrics.metricsInitialization(5)
+  var windowSize = conf.getString("blockchain.windowSize").toInt
+  var blockchainMetric = BlockchainMetrics.metricsInitialization(windowSize)
+  var hours : Int = BlockchainMetrics.calculateHours(windowSize)
   val n = BlockchainMetrics.getLastNHoursHeights(2)
   blockchainMetric = BlockchainMetrics.updateMetrics(blockchainMetric,n)
   val blockchainResult = blockchainMetric.toVector
@@ -51,7 +53,7 @@ object Kek extends App {
   val blockchainSource: Source[Vector[String], NotUsed] = Source(blockchainResult :: Nil)
 
   val writePath = conf.getString("directories.writePath")
-  
+
 
   val exchangesPW = new PrintWriter(new File(writePath.concat("exchanges_metrics.txt")))
   exchangesPW.write(exchangesString)
@@ -66,33 +68,32 @@ object Kek extends App {
   implicit val executionContext: ExecutionContext = actors.dispatcher
 
 
-  val route: Route = (path("instant-metrics") & parameter("symbol".as[String].?)) { symbol =>
-    get {
-      val stream = exchangeSource
-        .via(filter(symbol))
-        .via(instantMetrics(c))
-        .map(_.toVector)
-        .prepend(instantHeader)
-        .via(formatter)
-      complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
-    }
-  }
+  val route: Route = concat(
+    path("exchanges-metrics") {
+      get {
+        val stream = exchangeSource
+          .via(instantMetrics(c))
+          .map(_.toVector)
+          .prepend(instantHeader)
+          .via(formatter)
+        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
+      }
 
-  val myRoute: Route = path("blockchain-metrics") {
-    get {
-      val stream = blockchainSource
-        .map(_.toVector)
-        .prepend(blockchainHeader)
-        .via(formatter)
-      complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
+  },
+    path("blockchain-metrics") {
+      get {
+        val stream = blockchainSource
+          .map(_.toVector)
+          .prepend(blockchainHeader)
+          .via(formatter)
+        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, stream))
+      }
     }
-  }
+  )
 
 
   for {
     binding <- Http().bindAndHandle(route, "localhost", 8080)
-    binding <- Http().bindAndHandle(myRoute, "localhost", 8088)
-
     _ = sys.addShutdownHook {
       for {
         _ <- binding.terminate(Duration(5, TimeUnit.SECONDS))

@@ -154,4 +154,13 @@ object BlockchainMetrics {
     }
     heights.toList
   }
+
+  def calculateHours(nBlocks:Int) : Int = {
+    for (hour <- 1 to 100){
+      if (nBlocks / 6 < hour) {
+        return hour
+      }
+    }
+    1
+  }
 }

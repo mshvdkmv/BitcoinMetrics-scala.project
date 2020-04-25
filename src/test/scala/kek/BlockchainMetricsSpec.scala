@@ -45,6 +45,13 @@ class BlockchainMetricsSpec extends AnyFlatSpec with Matchers with OptionValues{
     blockInfo shouldEqual block627437info
   }
 
+  "calculateHours" should "be correct" in {
+
+    val windowSize : Int = 10
+    val hours = BlockchainMetrics.calculateHours(windowSize)
+    hours shouldEqual 2
+  }
+
 
 }
 
