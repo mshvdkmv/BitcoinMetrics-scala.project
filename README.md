@@ -33,7 +33,7 @@ After the run of the application, the metrics could be accessed from the servers
 
 http://localhost:8080/exchanges-metrics - for the exchanges metrics
 
-http://localhost:8088/blockchain-metrics - for the blokchain metrics
+http://localhost:8080/blockchain-metrics - for the blokchain metrics
 
 OR 
 
