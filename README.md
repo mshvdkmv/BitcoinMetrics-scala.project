@@ -39,3 +39,5 @@ OR
 
 by accessing ```exchanges_metrics.txt``` and ```blockchain_metrics.txt``` files stored in a specified directory.
 
+
+P.S. Nikita and Vanya, I know, that this is not a perfect Scala application. It was hard for me to learn this language. The Scala elective is the only obstacle on my way to 36k. Guys, please, don't let me down.
